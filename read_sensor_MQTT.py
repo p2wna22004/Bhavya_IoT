@@ -1,5 +1,5 @@
 import paho.mqtt.client as mqtt
-import time import strftime
+import time as strftime
 
 from w1thermsensor import W1ThermSensor
 #Establish mqtt connection
