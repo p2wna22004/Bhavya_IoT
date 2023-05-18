@@ -1,0 +1,53 @@
+import network
+import socket
+from umqtt.simple import MQTTClient
+import machine
+import urequests
+import dht
+import time
+import machine
+from machine import Pin
+
+p0 = Pin(0, Pin.IN, Pin.PULL_UP)
+d=dht.DHT11(machine.Pin(0))
+ssid = 'KALATHIVILAYIL'
+password = 'xxxx'
+
+def connect():
+    #Connect to WLAN
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(ssid, password)
+    print('connected')
+    while wlan.isconnected() == False:
+        print('Waiting for connection...')
+        time.sleep(1)
+    print(wlan.ifconfig())
+import ubinascii
+mqtt_server = '34.125.211.55'
+client_id = ubinascii.hexlify(machine.unique_id())
+
+def mqtt_connect():
+    client = MQTTClient(client_id, mqtt_server, keepalive=3600)
+    client.connect()
+    print('Connected to %s MQTT Broker'%(mqtt_server))
+    return client
+
+try:
+   client = mqtt_connect()
+except OSError as e:
+   reconnect()
+
+p0 = Pin(0, Pin.IN, Pin.PULL_UP)
+d=dht.DHT11(machine.Pin(0))
+
+while True:
+    d.measure()
+    topic_pub_temp = b'Agri/Temperature'
+    topic_msg_temp = str(d.temperature())
+    topic_pub_hum = b'Agri/Humidity'
+    topic_msg_hum=str(d.humidity())
+    client.publish(topic_pub_temp, topic_msg_temp)
+    client.publish(topic_pub_hum, topic_msg_hum)
+    time.sleep(3)
+
